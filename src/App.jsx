@@ -666,17 +666,95 @@ export default function App() {
         <canvas id="vortexCanvas" ref={canvasRef}></canvas>
 
         <div className="vortex-ui-overlay">
-          <div className="flex justify-between items-start">
-            <div className="vortex-panel flex items-center gap-3 rounded-full">
-              <span className="flex items-center gap-1.5 font-bold tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> D`VORTEX
-              </span>
-              <span className="text-slate-500">|</span>
-              <span className="text-emerald-neon font-bold">Φ = 1.618</span>
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-2.5">
+            {/* Lado Izquierdo: Badge D'VORTEX + Controles Rítmicos (Tempo, Figura, Golpes, Play) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="vortex-panel flex items-center gap-3 rounded-full">
+                <span className="flex items-center gap-1.5 font-bold tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> D`VORTEX
+                </span>
+                <span className="text-slate-500">|</span>
+                <span className="text-emerald-neon font-bold">Φ = 1.618</span>
+              </div>
+
+              {/* Control de Tempo (BPM) */}
+              <div className="vortex-panel flex items-center gap-2" title="Tempo (BPM)">
+                <i className="fa-solid fa-gauge-high text-amber-400 text-xs"></i>
+                <span className="text-[11px] font-bold text-amber-300 font-mono min-w-[55px]">
+                  {currentBpm} BPM
+                </span>
+                <input
+                  type="range"
+                  id="bpmSlider"
+                  min="60"
+                  max="180"
+                  value={currentBpm}
+                  onChange={(e) => setCurrentBpm(parseInt(e.target.value))}
+                  className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
+                />
+              </div>
+
+              {/* Control de Figura Rítmica */}
+              <div className="vortex-panel flex items-center gap-1.5" title="Figura Rítmica (Tiempos por acorde)">
+                <i className="fa-solid fa-music text-amber-400 text-xs mr-0.5"></i>
+                {[
+                  { val: 4, symbol: '𝅝', label: '4t' },
+                  { val: 2, symbol: '𝅗𝅥', label: '2t' },
+                  { val: 1, symbol: '♩', label: '1t' },
+                  { val: 0.5, symbol: '♪', label: '½t' }
+                ].map(item => (
+                  <button
+                    key={item.val}
+                    onClick={() => setBeatsPerChordValue(item.val)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-0.5 ${
+                      beatsPerChordValue === item.val
+                        ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
+                        : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
+                    }`}
+                    title={`${item.label} (${item.val} tiempos)`}
+                  >
+                    <span className="text-xs font-serif leading-none">{item.symbol}</span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Control de Golpes */}
+              <div className="vortex-panel flex items-center gap-1.5" title="Golpes por Acorde">
+                <i className="fa-solid fa-drum text-amber-400 text-xs mr-0.5"></i>
+                {[1, 2, 4, 8].map(hits => (
+                  <button
+                    key={hits}
+                    onClick={() => setHitsPerChordValue(hits)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${
+                      hitsPerChordValue === hits
+                        ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
+                        : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
+                    }`}
+                    title={`${hits} golpes por acorde`}
+                  >
+                    {hits}x
+                  </button>
+                ))}
+              </div>
+
+              {/* Botón rápido Play/Stop en el Visualizador */}
+              <button
+                onClick={() => isPlaying ? stopProgression() : startProgression()}
+                className={`vortex-panel flex items-center gap-1.5 font-bold cursor-pointer transition ${
+                  isPlaying
+                    ? 'bg-rose-500/20 text-rose-400 border-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
+                    : 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                }`}
+                title={isPlaying ? 'Detener Progresión' : 'Reproducir Progresión'}
+              >
+                <i className={`fa-solid ${isPlaying ? 'fa-square' : 'fa-play'} text-[10px]`}></i>
+                <span>{isPlaying ? 'Detener' : 'Play'}</span>
+              </button>
             </div>
 
-            <div className="flex flex-wrap justify-end gap-2 max-w-[75%]">
-              {/* Controles Visuales Interactivos */}
+            {/* Lado Derecho: Controles de Geometría y Visualización */}
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <div className="vortex-panel flex items-center gap-2" title="Cantidad de Partículas">
                 <i className="fa-solid fa-sparkles text-[10px]"></i>
                 <input
@@ -940,93 +1018,27 @@ export default function App() {
         </section>
 
         <section className="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-200 flex items-center gap-2">
                 <i className="fa-solid fa-play text-emerald-400"></i> Generador de Secuencia y Ritmo
               </h2>
-              <p className="text-xs text-slate-400">Experimenta la alternancia entre descanso, movimiento y urgencia en el tiempo.</p>
+              <p className="text-xs text-slate-400">
+                Experimenta la alternancia entre descanso, movimiento y urgencia en el tiempo. (Tempo: <span className="text-amber-400 font-bold">{currentBpm} BPM</span> | Figura: <span className="text-amber-400 font-bold">{beatsPerChordValue}t</span> | Golpes: <span className="text-amber-400 font-bold">{hitsPerChordValue}x</span>)
+              </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-              <div className="flex flex-col gap-1.5 bg-slate-900 px-4 py-2 rounded-xl border border-slate-700 min-w-[180px] flex-grow sm:flex-grow-0">
-                <div className="flex justify-between items-center">
-                  <label htmlFor="bpmSlider" className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <i className="fa-solid fa-gauge-high text-amber-400"></i> Tempo:
-                  </label>
-                  <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-mono">
-                    {currentBpm} BPM
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  id="bpmSlider"
-                  min="60"
-                  max="180"
-                  value={currentBpm}
-                  onChange={(e) => setCurrentBpm(parseInt(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5 bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
-                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <i className="fa-solid fa-music text-amber-400"></i> Figura:
-                </span>
-                <div className="flex items-center gap-1.5">
-                  {[
-                    { val: 4, symbol: '𝅝', label: '4t' },
-                    { val: 2, symbol: '𝅗𝅥', label: '2t' },
-                    { val: 1, symbol: '♩', label: '1t' },
-                    { val: 0.5, symbol: '♪', label: '½t' }
-                  ].map(item => (
-                    <button
-                      key={item.val}
-                      onClick={() => setBeatsPerChordValue(item.val)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                        beatsPerChordValue === item.val
-                          ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
-                          : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
-                      }`}
-                    >
-                      <span className="text-base font-serif leading-none">{item.symbol}</span>
-                      <span className="text-[10px]">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5 bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
-                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <i className="fa-solid fa-drum text-amber-400"></i> Golpes:
-                </span>
-                <div className="flex items-center gap-1.5">
-                  {[1, 2, 4, 8].map(hits => (
-                    <button
-                      key={hits}
-                      onClick={() => setHitsPerChordValue(hits)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                        hitsPerChordValue === hits
-                          ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
-                          : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
-                      }`}
-                    >
-                      <span>{hits}x</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={() => isPlaying ? stopProgression() : startProgression()}
-                className={`font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg transition self-stretch sm:self-auto justify-center text-white ${
-                  isPlaying ? 'bg-rose-600 hover:bg-rose-500' : 'bg-emerald-600 hover:bg-emerald-500'
-                }`}
-              >
-                <i className={`fa-solid ${isPlaying ? 'fa-square' : 'fa-play'}`}></i>
-                {isPlaying ? 'Detener' : 'Reproducir Progresión'}
-              </button>
-            </div>
+            {/* Botón Reproducir Progresión */}
+            <button
+              id="btnPlay"
+              onClick={() => isPlaying ? stopProgression() : startProgression()}
+              className={`font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-lg transition self-stretch sm:self-auto justify-center text-white ${
+                isPlaying ? 'bg-rose-600 hover:bg-rose-500' : 'bg-emerald-600 hover:bg-emerald-500'
+              }`}
+            >
+              <i className={`fa-solid ${isPlaying ? 'fa-square' : 'fa-play'}`}></i>
+              {isPlaying ? 'Detener' : 'Reproducir Progresión'}
+            </button>
           </div>
 
           <div className="flex flex-col gap-3 mb-6 bg-slate-900/60 p-4 rounded-xl border border-slate-700/80">
