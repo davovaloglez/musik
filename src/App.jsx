@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const NOTE_NAMES_ES = {
@@ -31,6 +31,175 @@ const DEGREES_INFO_MINOR = [
   { roman: 'VII', mode: 'Mixolidio', type: 'Maj', quality: 'Mayor', isMinor: false, function: 'Dominante Subtónica', tension: 'urgencia', urgencyPercent: 90, colorText: 'text-rose-300', badgeBg: 'bg-rose-700/20', icon: '<svg class="w-8 h-8 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' }
 ];
 
+// --- FUNCIONES DE DIBUJO DE GEOMETRÍA SAGRADA (CANVAS D'VORTEX) ---
+function drawFlowerOfLife(ctx, canvas, cx, cy, rotation, intensity, matrixLevel) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-rotation * 0.4); // Rotación sutil contra-armónica
+
+  const baseRadius = Math.min(canvas.width, canvas.height) * 0.085 * (1 + intensity * 0.15);
+
+  ctx.lineWidth = 1.2 + intensity * 1.5;
+  ctx.strokeStyle = '#10b981';
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 8 + intensity * 15;
+  ctx.globalAlpha = 0.5 + intensity * 0.35;
+
+  // 1. Círculo Central
+  ctx.beginPath();
+  ctx.arc(0, 0, baseRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 2. Primera Capa (6 Círculos de la Semilla de la Vida - Nivel 1+)
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i;
+    const x = baseRadius * Math.cos(angle);
+    const y = baseRadius * Math.sin(angle);
+    ctx.beginPath();
+    ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 3. Segunda Capa (12 Círculos - Nivel 2+)
+  if (matrixLevel >= 2) {
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      const x = 2 * baseRadius * Math.cos(angle);
+      const y = 2 * baseRadius * Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i + Math.PI / 6;
+      const dist = baseRadius * Math.sqrt(3);
+      const x = dist * Math.cos(angle);
+      const y = dist * Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  // 4. Tercera Capa Expandida (Nivel 3+)
+  if (matrixLevel >= 3) {
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      const x = 4 * baseRadius * Math.cos(angle);
+      const y = 4 * baseRadius * Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  // 5. Cubo de Metatrón (Conexiones Líneales - Nivel 4)
+  if (matrixLevel >= 4) {
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.shadowColor = '#ffffff';
+    ctx.shadowBlur = 10 + intensity * 20;
+
+    const points = [{ x: 0, y: 0 }];
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      points.push({ x: 2 * baseRadius * Math.cos(angle), y: 2 * baseRadius * Math.sin(angle) });
+      points.push({ x: 4 * baseRadius * Math.cos(angle), y: 4 * baseRadius * Math.sin(angle) });
+    }
+
+    ctx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        ctx.moveTo(points[i].x, points[i].y);
+        ctx.lineTo(points[j].x, points[j].y);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // Anillos Sagrados Envolventes Exteriores
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#00f0ff';
+  const ringMultiplier = matrixLevel >= 3 ? 5 : 3;
+
+  ctx.beginPath();
+  ctx.arc(0, 0, baseRadius * ringMultiplier, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(0, 0, baseRadius * (ringMultiplier + 0.08), 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawGoldenSpiral(ctx, cx, cy, rotation, intensity, branches) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation + intensity * 0.5);
+
+  const a = 1;
+  const b = 0.3063; // ln(Phi) / (PI/2) aprox.
+  const loops = 4;
+
+  for (let j = 0; j < branches; j++) {
+    ctx.save();
+    ctx.rotate(((Math.PI * 2) / branches) * j);
+
+    ctx.beginPath();
+    for (let i = 0; i < loops * 2 * Math.PI; i += 0.1) {
+      const dynamicA = a * (1 + intensity * 0.5);
+      const r = dynamicA * Math.exp(b * i);
+      const x = r * Math.cos(i);
+      const y = r * Math.sin(i);
+
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.lineWidth = 2 + intensity * 2;
+    ctx.strokeStyle = j % 2 === 0 ? '#10b981' : '#00f0ff';
+    ctx.shadowColor = j % 2 === 0 ? '#10b981' : '#00f0ff';
+    ctx.shadowBlur = 10 + intensity * 20;
+    ctx.globalAlpha = 0.6 + intensity * 0.4;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function drawD(ctx, cx, cy, scale, intensity) {
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  const currentScale = scale * (1 + intensity * 0.3);
+  ctx.scale(currentScale, currentScale);
+
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#00f0ff';
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 15 + intensity * 30;
+
+  ctx.beginPath();
+  // Tallo de la 'D'
+  ctx.moveTo(-15, -30);
+  ctx.lineTo(-15, 30);
+  // Curva de la 'D'
+  ctx.bezierCurveTo(25, 30, 35, 15, 35, 0);
+  ctx.bezierCurveTo(35, -15, 25, -30, -15, -30);
+  ctx.stroke();
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#ffffff';
+  ctx.shadowBlur = 5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 export default function App() {
   const [baseNoteChar, setBaseNoteChar] = useState('A');
   const [isSharpActive, setIsSharpActive] = useState(false);
@@ -48,13 +217,89 @@ export default function App() {
   const [isRecordingMode, setIsRecordingMode] = useState(false);
   const [isPlayingCustom, setIsPlayingCustom] = useState(false);
 
+  // Estados del Visualizador de Geometría Sagrada (D'VORTEX)
+  const [isMatrixActive, setIsMatrixActive] = useState(true);
+  const [isEmblemDActive, setIsEmblemDActive] = useState(true);
+  const [cfgParticles, setCfgParticles] = useState(100);
+  const [cfgSpeed, setCfgSpeed] = useState(1.0);
+  const [cfgSpiralBranches, setCfgSpiralBranches] = useState(6);
+  const [cfgMatrixLevel, setCfgMatrixLevel] = useState(2);
+
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const particlesRef = useRef([]);
+
+  const configRef = useRef({
+    isMatrixActive: true,
+    isEmblemDActive: true,
+    cfgParticles: 100,
+    cfgSpeed: 1.0,
+    cfgSpiralBranches: 6,
+    cfgMatrixLevel: 2,
+  });
+
+  useEffect(() => {
+    configRef.current = {
+      isMatrixActive,
+      isEmblemDActive,
+      cfgParticles,
+      cfgSpeed,
+      cfgSpiralBranches,
+      cfgMatrixLevel,
+    };
+  }, [isMatrixActive, isEmblemDActive, cfgParticles, cfgSpeed, cfgSpiralBranches, cfgMatrixLevel]);
+
+  const adjustParticles = (targetCount) => {
+    const cian = 'rgba(0, 240, 255, ';
+    const esmeralda = 'rgba(16, 185, 129, ';
+    const current = particlesRef.current;
+    if (current.length < targetCount) {
+      const diff = targetCount - current.length;
+      for (let i = 0; i < diff; i++) {
+        current.push({
+          x: Math.random() * 2 - 1,
+          y: Math.random() * 2 - 1,
+          size: Math.random() * 3 + 0.5,
+          speed: Math.random() * 0.02 + 0.005,
+          angle: Math.random() * Math.PI * 2,
+          colorType: Math.random() > 0.5 ? cian : esmeralda,
+        });
+      }
+    } else if (current.length > targetCount) {
+      current.splice(targetCount);
+    }
+  };
+
+  useEffect(() => {
+    adjustParticles(cfgParticles);
+  }, [cfgParticles]);
+
   const audioCtxRef = useRef(null);
+  const masterGainRef = useRef(null);
+  const analyserRef = useRef(null);
+  const dataArrayRef = useRef(null);
+
   const playIntervalRef = useRef(null);
   const customPlayIntervalRef = useRef(null);
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtxClass();
+      const masterGain = ctx.createGain();
+      masterGain.connect(ctx.destination);
+
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 128; // Resolución para frecuencias bajas/medias
+      masterGain.connect(analyser);
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      audioCtxRef.current = ctx;
+      masterGainRef.current = masterGain;
+      analyserRef.current = analyser;
+      dataArrayRef.current = dataArray;
     }
     if (audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume();
@@ -79,10 +324,141 @@ export default function App() {
       gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       osc.connect(gain);
-      gain.connect(audioCtxRef.current.destination);
+      gain.connect(masterGainRef.current);
       osc.start(now);
       osc.stop(now + duration);
     });
+  };
+
+  // Loop de animación del Canvas Vortex
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationId;
+    let rotationAngle = 0;
+
+    const resizeCanvas = () => {
+      const container = containerRef.current;
+      if (container && canvas) {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+      }
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    if (particlesRef.current.length === 0) {
+      adjustParticles(configRef.current.cfgParticles);
+    }
+
+    const animateVortex = () => {
+      const cfg = configRef.current;
+      const analyser = analyserRef.current;
+      const dataArray = dataArrayRef.current;
+
+      let audioIntensity = 0;
+      if (analyser && dataArray) {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        const range = 20;
+        for (let i = 0; i < range; i++) {
+          sum += dataArray[i];
+        }
+        audioIntensity = (sum / range) / 255;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const radiusScale = Math.min(cx, cy);
+
+      // Fondo sutil con rastro de movimiento
+      ctx.fillStyle = 'rgba(3, 7, 18, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Rotación continua reactiva al audio y acelerada por la velocidad configurada
+      rotationAngle += (0.005 + (audioIntensity * 0.02)) * cfg.cfgSpeed;
+
+      // Dibujar Partículas (Matriz cósmica)
+      const particles = particlesRef.current;
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.angle += p.speed * cfg.cfgSpeed;
+        let r = Math.sqrt(p.x * p.x + p.y * p.y) + (0.001 + audioIntensity * 0.005);
+        if (r > 1) {
+          r = 0.01;
+          p.angle = Math.random() * Math.PI * 2;
+        }
+        p.x = r * Math.cos(p.angle);
+        p.y = r * Math.sin(p.angle);
+
+        const absX = cx + p.x * radiusScale;
+        const absY = cy + p.y * radiusScale;
+
+        ctx.beginPath();
+        ctx.arc(absX, absY, p.size * (1 + audioIntensity), 0, Math.PI * 2);
+        const alpha = Math.min(1, r * 2);
+        ctx.fillStyle = p.colorType + alpha + ')';
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = p.colorType + '1)';
+        ctx.fill();
+      }
+
+      // Dibujar Espiral Áurea
+      drawGoldenSpiral(ctx, cx, cy, rotationAngle, audioIntensity, cfg.cfgSpiralBranches);
+
+      // Dibujar Flor de la Vida (Matrix) si está activa
+      if (cfg.isMatrixActive) {
+        drawFlowerOfLife(ctx, canvas, cx, cy, rotationAngle, audioIntensity, cfg.cfgMatrixLevel);
+      }
+
+      // Dibujar Emblema 'D' en el centro si está activo
+      if (cfg.isEmblemDActive) {
+        const dScale = Math.min(canvas.width, canvas.height) / 400;
+        drawD(ctx, cx, cy, dScale, audioIntensity);
+      }
+
+      // Núcleo luminoso central
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5 + audioIntensity * 15, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 20 + audioIntensity * 40;
+      ctx.fill();
+
+      animationId = requestAnimationFrame(animateVortex);
+    };
+
+    animationId = requestAnimationFrame(animateVortex);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
+  const toggleEmblemD = () => {
+    setIsEmblemDActive(prev => !prev);
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const toggleMatrixMode = () => {
+    setIsMatrixActive(prev => !prev);
+  };
+
+  const toggleVortexFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(err => {
+        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
   };
 
   const getRootNoteIndex = () => {
@@ -139,10 +515,14 @@ export default function App() {
   };
 
   const isPlayingRef = useRef(isPlaying);
-  isPlayingRef.current = isPlaying;
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   const isPlayingCustomRef = useRef(isPlayingCustom);
-  isPlayingCustomRef.current = isPlayingCustom;
+  useEffect(() => {
+    isPlayingCustomRef.current = isPlayingCustom;
+  }, [isPlayingCustom]);
 
   const startProgression = () => {
     initAudio();
@@ -205,7 +585,8 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen justify-between">
-      <header className="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+      {/* Header principal */}
+      <header className="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md relative z-30">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-amber-400 flex items-center gap-2">
@@ -214,7 +595,9 @@ export default function App() {
             <p className="text-xs text-slate-400">Basado en las Funciones Armónicas: Tónica (Descanso), Subdominante (Movimiento) y Dominante (Urgencia)</p>
           </div>
           
+          {/* Panel de Control de Tonalidad, Alteración e Inclinación (Mayor/Menor) */}
           <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-900 p-2.5 rounded-xl border border-slate-700">
+            {/* Selector de Nota Base (Sólo Notas Naturales) */}
             <div className="flex items-center gap-2">
               <label htmlFor="rootNote" className="text-xs font-semibold text-slate-300">Nota Base:</label>
               <select
@@ -233,6 +616,7 @@ export default function App() {
               </select>
             </div>
 
+            {/* Toggle Sostenido (#) */}
             <div className="flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
               <span className="text-xs font-semibold text-slate-300">Sostenido (#):</span>
               <button
@@ -245,6 +629,7 @@ export default function App() {
               </button>
             </div>
 
+            {/* Switch Modo Mayor / Menor */}
             <div className="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700">
               <button
                 onClick={() => setCurrentScaleType('major')}
@@ -259,9 +644,139 @@ export default function App() {
                 Menor
               </button>
             </div>
+
+            {/* Botón de acceso directo al Visualizador del Emblema */}
+            <button
+              id="btnEmblemaD"
+              onClick={toggleEmblemD}
+              className={`ml-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold transition flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                isEmblemDActive
+                  ? 'text-cyan-400 border-cyan-500/30 shadow-[0_0_10px_rgba(0,240,255,0.1)]'
+                  : 'text-slate-400 border-slate-700 opacity-60'
+              }`}
+            >
+              <i className="fa-solid fa-hurricane"></i> Emblema D
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Visualizador de Geometría Sagrada (D'VORTEX) */}
+      <section id="vortex-container" ref={containerRef}>
+        <canvas id="vortexCanvas" ref={canvasRef}></canvas>
+
+        <div className="vortex-ui-overlay">
+          <div className="flex justify-between items-start">
+            <div className="vortex-panel flex items-center gap-3 rounded-full">
+              <span className="flex items-center gap-1.5 font-bold tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> D`VORTEX
+              </span>
+              <span className="text-slate-500">|</span>
+              <span className="text-emerald-neon font-bold">Φ = 1.618</span>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 max-w-[75%]">
+              {/* Controles Visuales Interactivos */}
+              <div className="vortex-panel flex items-center gap-2" title="Cantidad de Partículas">
+                <i className="fa-solid fa-sparkles text-[10px]"></i>
+                <input
+                  type="range"
+                  id="ctrlParticles"
+                  min="10"
+                  max="400"
+                  step="10"
+                  value={cfgParticles}
+                  onChange={(e) => setCfgParticles(parseInt(e.target.value))}
+                  className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                />
+              </div>
+              <div className="vortex-panel flex items-center gap-2" title="Velocidad del Tiempo">
+                <i className="fa-solid fa-gauge-high text-[10px]"></i>
+                <input
+                  type="range"
+                  id="ctrlSpeed"
+                  min="0.1"
+                  max="3"
+                  step="0.1"
+                  value={cfgSpeed}
+                  onChange={(e) => setCfgSpeed(parseFloat(e.target.value))}
+                  className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                />
+              </div>
+              <div className="vortex-panel flex items-center gap-2" title="Ramas de la Espiral Áurea">
+                <i className="fa-solid fa-hurricane text-[10px]"></i>
+                <input
+                  type="range"
+                  id="ctrlSpiral"
+                  min="2"
+                  max="12"
+                  step="2"
+                  value={cfgSpiralBranches}
+                  onChange={(e) => setCfgSpiralBranches(parseInt(e.target.value))}
+                  className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                />
+              </div>
+              <div className="vortex-panel flex items-center gap-2" title="Nivel Evolutivo: Matrix a Metatrón">
+                <i className="fa-solid fa-cube text-[10px]"></i>
+                <input
+                  type="range"
+                  id="ctrlMatrix"
+                  min="1"
+                  max="4"
+                  step="1"
+                  value={cfgMatrixLevel}
+                  onChange={(e) => setCfgMatrixLevel(parseInt(e.target.value))}
+                  className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  className="vortex-panel hover:bg-slate-800 transition-colors cursor-pointer border-emerald-neon"
+                  onClick={() => {
+                    if (containerRef.current) containerRef.current.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Vortex
+                </button>
+                <button
+                  id="btnMatrixMode"
+                  onClick={toggleMatrixMode}
+                  className={`vortex-panel hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                    isMatrixActive
+                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                      : 'text-slate-400 border-slate-700 opacity-60'
+                  }`}
+                >
+                  <i className="fa-solid fa-circle-nodes"></i> Matrix
+                </button>
+                <button
+                  className="vortex-panel hover:bg-slate-800 transition-colors cursor-pointer"
+                  onClick={toggleVortexFullscreen}
+                  title="Pantalla Completa"
+                >
+                  <i className="fa-solid fa-expand"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-end">
+            <div className="vortex-panel flex gap-3">
+              <span>r(θ) = a · e^(bθ)</span>
+              <span className="text-slate-500">|</span>
+              <span>b = ln(Φ) / (π/2) &approx; 0.3063</span>
+              <span className="text-slate-500">|</span>
+              <span className="text-emerald-neon">Sacred Proportion</span>
+            </div>
+            <div className="vortex-panel">
+              Core: <span className="font-bold text-cyan-400">Dave (D)</span>{' '}
+              <span className="text-slate-500 mx-1">•</span> Spiral:{' '}
+              <span className="font-bold text-emerald-neon">Fibonacci Vortex</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <main className="max-w-7xl mx-auto p-4 md:p-6 w-full flex-grow space-y-8">
         <section>

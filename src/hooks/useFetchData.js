@@ -6,22 +6,29 @@ export function useFetchData(fetchFunction, deps = []) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const controller = new AbortController();
-    setLoading(true);
 
     fetchFunction({ signal: controller.signal })
       .then((res) => {
-        setData(res);
-        setError(null);
-      })
-      .catch((err) => {
-        if (err.name !== 'AbortError') {
-          setError(err.message || 'Error al cargar datos');
+        if (isMounted) {
+          setData(res);
+          setError(null);
+          setLoading(false);
         }
       })
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (isMounted && err.name !== 'AbortError') {
+          setError(err.message || 'Error al cargar datos');
+          setLoading(false);
+        }
+      });
 
-    return () => controller.abort();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return { data, loading, error };
