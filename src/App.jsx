@@ -1027,18 +1027,6 @@ export default function App() {
                 Experimenta la alternancia entre descanso, movimiento y urgencia en el tiempo. (Tempo: <span className="text-amber-400 font-bold">{currentBpm} BPM</span> | Figura: <span className="text-amber-400 font-bold">{beatsPerChordValue}t</span> | Golpes: <span className="text-amber-400 font-bold">{hitsPerChordValue}x</span>)
               </p>
             </div>
-
-            {/* Botón Reproducir Progresión */}
-            <button
-              id="btnPlay"
-              onClick={() => isPlaying ? stopProgression() : startProgression()}
-              className={`font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-lg transition self-stretch sm:self-auto justify-center text-white ${
-                isPlaying ? 'bg-rose-600 hover:bg-rose-500' : 'bg-emerald-600 hover:bg-emerald-500'
-              }`}
-            >
-              <i className={`fa-solid ${isPlaying ? 'fa-square' : 'fa-play'}`}></i>
-              {isPlaying ? 'Detener' : 'Reproducir Progresión'}
-            </button>
           </div>
 
           <div className="flex flex-col gap-3 mb-6 bg-slate-900/60 p-4 rounded-xl border border-slate-700/80">
