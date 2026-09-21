@@ -664,7 +664,6 @@ export default function App() {
             <h1 className="text-2xl font-bold text-amber-400 flex items-center gap-2">
               <i className="fa-solid fa-music"></i> Mapas de Tensión y Modos Griegos
             </h1>
-            <p className="text-xs text-slate-400">Basado en las Funciones Armónicas: Tónica (Descanso), Subdominante (Movimiento) y Dominante (Urgencia)</p>
           </div>
 
           {/* Panel de Control de Tonalidad, Alteración e Inclinación (Mayor/Menor) */}
@@ -766,8 +765,8 @@ export default function App() {
                     key={item.val}
                     onClick={() => setBeatsPerChordValue(item.val)}
                     className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-0.5 ${beatsPerChordValue === item.val
-                        ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
+                      ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
+                      : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
                       }`}
                     title={`${item.label} (${item.val} tiempos)`}
                   >
@@ -785,8 +784,8 @@ export default function App() {
                     key={hits}
                     onClick={() => setHitsPerChordValue(hits)}
                     className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${hitsPerChordValue === hits
-                        ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
+                      ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
+                      : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
                       }`}
                     title={`${hits} golpes por acorde`}
                   >
@@ -799,8 +798,8 @@ export default function App() {
               <button
                 onClick={() => isPlaying ? stopProgression() : startProgression()}
                 className={`vortex-panel flex items-center gap-1.5 font-bold cursor-pointer transition ${isPlaying
-                    ? 'bg-rose-500/20 text-rose-400 border-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
-                    : 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                  ? 'bg-rose-500/20 text-rose-400 border-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
+                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                   }`}
                 title={
                   isPlaying
@@ -878,8 +877,8 @@ export default function App() {
                   id="btnMatrixMode"
                   onClick={toggleMatrixMode}
                   className={`vortex-panel hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer ${isMatrixActive
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
-                      : 'text-slate-400 border-slate-700 opacity-60'
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                    : 'text-slate-400 border-slate-700 opacity-60'
                     }`}
                   title={isMatrixActive ? 'Desactivar Matrix' : 'Activar Matrix'}
                 >
@@ -889,8 +888,8 @@ export default function App() {
                   id="btnEmblemaD"
                   onClick={toggleEmblemD}
                   className={`vortex-panel hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer ${isEmblemDActive
-                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
-                      : 'text-slate-400 border-slate-700 opacity-60'
+                    ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    : 'text-slate-400 border-slate-700 opacity-60'
                     }`}
                   title={isEmblemDActive ? 'Ocultar Emblema D' : 'Mostrar Emblema'}
                 >
@@ -904,21 +903,6 @@ export default function App() {
                   <i className="fa-solid fa-expand"></i>
                 </button>
               </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-end">
-            <div className="vortex-panel flex gap-3">
-              <span>r(θ) = a · e^(bθ)</span>
-              <span className="text-slate-500">|</span>
-              <span>b = ln(Φ) / (π/2) &approx; 0.3063</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-emerald-neon">Sacred Proportion</span>
-            </div>
-            <div className="vortex-panel">
-              Core: <span className="font-bold text-cyan-400">Dave (D)</span>{' '}
-              <span className="text-slate-500 mx-1">•</span> Spiral:{' '}
-              <span className="font-bold text-emerald-neon">Fibonacci Vortex</span>
             </div>
           </div>
         </div>
@@ -1145,8 +1129,8 @@ export default function App() {
                           key={catIdx}
                           onClick={() => setSelectedGenreIndex(catIdx)}
                           className={`text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isGenreActive
-                              ? 'bg-slate-800 text-amber-300 border border-amber-400/40 shadow ring-1 ring-amber-400/20'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+                            ? 'bg-slate-800 text-amber-300 border border-amber-400/40 shadow ring-1 ring-amber-400/20'
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
                             }`}
                         >
                           <i className={`fa-solid ${cat.icon} ${isGenreActive ? cat.color : 'text-slate-500'} text-[10px]`}></i>
@@ -1191,8 +1175,8 @@ export default function App() {
                           }
                         }}
                         className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer ${isSelected
-                            ? 'bg-amber-500/20 text-amber-200 border-amber-400 ring-2 ring-amber-400/50 font-bold shadow'
-                            : `bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600 ${FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex].borderHover}`
+                          ? 'bg-amber-500/20 text-amber-200 border-amber-400 ring-2 ring-amber-400/50 font-bold shadow'
+                          : `bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600 ${FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex].borderHover}`
                           }`}
                       >
                         {isSelected && <i className="fa-solid fa-check text-[9px] text-amber-400"></i>}
