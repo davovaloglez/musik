@@ -31,6 +31,65 @@ const DEGREES_INFO_MINOR = [
   { roman: 'VII', mode: 'Mixolidio', type: 'Maj', quality: 'Mayor', isMinor: false, function: 'Dominante Subtónica', tension: 'urgencia', urgencyPercent: 90, colorText: 'text-rose-300', badgeBg: 'bg-rose-700/20', icon: '<svg class="w-8 h-8 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' }
 ];
 
+const FAMOUS_PROGRESSIONS_CATEGORIES = [
+  {
+    category: 'Pop, Rock & Blues Clásico',
+    icon: 'fa-guitar',
+    color: 'text-amber-400/90',
+    borderHover: 'hover:border-amber-400/50',
+    items: [
+      { arr: [0, 3, 4, 0], label: 'I - IV - V - I (Clásica Reposo-Movimiento)' },
+      { arr: [0, 4, 5, 3], label: 'I - V - VI - IV (Pop Moderno / 4 Chords)' },
+      { arr: [0, 5, 3, 4], label: 'I - VI - IV - V (Pop Estándar / Balada)' },
+      { arr: [0, 4, 3, 4], label: 'I - V - IV - V (Rock / Pop Clásico)' },
+      { arr: [0, 3, 0, 4], label: 'I - IV - I - V (Blues / Tradicional)' },
+      { arr: [0, 4, 1, 3], label: 'I - V - II - IV (Indie / Alternative Folk)' }
+    ]
+  },
+  {
+    category: 'Jazz, Neo-Soul & Lo-Fi',
+    icon: 'fa-saxhorn',
+    color: 'text-indigo-400/90',
+    borderHover: 'hover:border-indigo-400/50',
+    items: [
+      { arr: [1, 4, 0, 0], label: 'II - V - I (Cadencia Fundamental de Jazz)' },
+      { arr: [1, 4, 0, 5], label: 'II - V - I - VI (Círculo Armónico de Jazz)' },
+      { arr: [0, 2, 5, 3], label: 'I - III - VI - IV (Lo-Fi Nostálgico / Neo-Soul)' },
+      { arr: [0, 3, 1, 4], label: 'I - IV - II - V (Gospel / Soft Soul)' },
+      { arr: [0, 5, 1, 4], label: 'I - VI - II - V (Turnaround Clásico Doo-Wop)' }
+    ]
+  },
+  {
+    category: 'BSO, Cine, Épica & Videojuegos',
+    icon: 'fa-film',
+    color: 'text-rose-400/90',
+    borderHover: 'hover:border-rose-400/50',
+    items: [
+      { arr: [0, 5, 2, 4], label: 'I - VI - III - V (Emotiva / Dramática)' },
+      { arr: [0, 3, 5, 4], label: 'I - IV - VI - V (Épica Cinematográfica)' },
+      { arr: [3, 4, 0, 5], label: 'IV - V - I - VI (Heroica RPG / Triunfal)' },
+      { arr: [3, 0, 4, 5], label: 'IV - I - V - VI (Gran Aventura BSO)' },
+      { arr: [0, 6, 5, 4], label: 'I - VII - VI - V (Descenso Tensión Épica)' }
+    ]
+  },
+  {
+    category: 'Anime, J-Pop & Exploración Modal',
+    icon: 'fa-compact-disc',
+    color: 'text-emerald-400/90',
+    borderHover: 'hover:border-emerald-400/50',
+    items: [
+      { arr: [3, 4, 2, 5], label: 'IV - V - III - VI (Royal Road / 王道進行 - Anime & J-Pop)' },
+      { arr: [5, 3, 0, 4], label: 'VI - IV - I - V (Axis Menor / Melancolía Pop)' },
+      { arr: [5, 4, 3, 4], label: 'VI - V - IV - V (Cadencia Andaluza / Aire Flamenco-Rock)' },
+      { arr: [0, 2, 3, 4], label: 'I - III - IV - V (Ascensión Escalofriante)' },
+      { arr: [0, 3, 2, 1], label: 'I - IV - III - II (Cascada Flotante Modal)' }
+    ]
+  }
+];
+
+const ALL_FAMOUS_PROGRESSIONS = FAMOUS_PROGRESSIONS_CATEGORIES.flatMap(c => c.items);
+
+
 // --- FUNCIONES DE DIBUJO DE GEOMETRÍA SAGRADA (CANVAS D'VORTEX) ---
 function drawFlowerOfLife(ctx, canvas, cx, cy, rotation, intensity, matrixLevel) {
   ctx.save();
@@ -215,7 +274,7 @@ export default function App() {
   const [customProgression, setCustomProgression] = useState([]);
   const [activeCustomSlotIndex, setActiveCustomSlotIndex] = useState(0);
   const [isRecordingMode, setIsRecordingMode] = useState(false);
-  const [isPlayingCustom, setIsPlayingCustom] = useState(false);
+  const [selectedFamousProgression, setSelectedFamousProgression] = useState(null);
 
   // Estados del Visualizador de Geometría Sagrada (D'VORTEX)
   const [isMatrixActive, setIsMatrixActive] = useState(true);
@@ -280,7 +339,6 @@ export default function App() {
   const dataArrayRef = useRef(null);
 
   const playIntervalRef = useRef(null);
-  const customPlayIntervalRef = useRef(null);
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -519,26 +577,46 @@ export default function App() {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  const isPlayingCustomRef = useRef(isPlayingCustom);
-  useEffect(() => {
-    isPlayingCustomRef.current = isPlayingCustom;
-  }, [isPlayingCustom]);
-
   const startProgression = () => {
     initAudio();
     setIsPlaying(true);
+
+    let progressionToPlay = [];
+    let isPlayingCustomMode = false;
+
+    if (customProgression.length > 0) {
+      // Si existe una progresión guardada, reproducir la progresión grabada
+      progressionToPlay = [...customProgression];
+      isPlayingCustomMode = true;
+    } else {
+      // Si no existe una progresión guardada, reproducir una pre-selección aleatoria de las famosas
+      let chosen = selectedFamousProgression;
+      if (!chosen) {
+        const randomIndex = Math.floor(Math.random() * ALL_FAMOUS_PROGRESSIONS.length);
+        chosen = ALL_FAMOUS_PROGRESSIONS[randomIndex];
+      }
+      progressionToPlay = [...chosen.arr];
+      setCurrentProgression([...chosen.arr]);
+      setSelectedFamousProgression(null);
+    }
+
     const totalStepDurationSec = (60 / currentBpm) * beatsPerChordValue;
     const intervalMs = totalStepDurationSec * 1000;
     let step = 0;
 
     const playStep = () => {
       if (!isPlayingRef.current) return;
-      const scaleNotes = getScaleNotes();
-      const degIdx = currentProgression[step];
-      const triad = getChordTriad(scaleNotes, degIdx);
+      const currentScaleNotes = getScaleNotes();
+      const degIdx = progressionToPlay[step];
+      const triad = getChordTriad(currentScaleNotes, degIdx);
+
       setSelectedDegreeIndex(degIdx);
+      if (isPlayingCustomMode) {
+        setActiveCustomSlotIndex(step);
+      }
+
       triggerRhythmicChordHits(triad, totalStepDurationSec, isPlayingRef);
-      step = (step + 1) % currentProgression.length;
+      step = (step + 1) % progressionToPlay.length;
     };
 
     playStep();
@@ -548,33 +626,6 @@ export default function App() {
   const stopProgression = () => {
     setIsPlaying(false);
     if (playIntervalRef.current) clearInterval(playIntervalRef.current);
-  };
-
-  const startPlayCustom = () => {
-    if (customProgression.length === 0) return;
-    initAudio();
-    setIsPlayingCustom(true);
-    const totalStepDurationSec = (60 / currentBpm) * beatsPerChordValue;
-    const intervalMs = totalStepDurationSec * 1000;
-    let step = 0;
-
-    const playStep = () => {
-      if (!isPlayingCustomRef.current) return;
-      const scaleNotes = getScaleNotes();
-      const degIdx = customProgression[step];
-      const triad = getChordTriad(scaleNotes, degIdx);
-      setActiveCustomSlotIndex(step);
-      triggerRhythmicChordHits(triad, totalStepDurationSec, isPlayingCustomRef);
-      step = (step + 1) % customProgression.length;
-    };
-
-    playStep();
-    customPlayIntervalRef.current = setInterval(playStep, intervalMs);
-  };
-
-  const stopPlayCustom = () => {
-    setIsPlayingCustom(false);
-    if (customPlayIntervalRef.current) clearInterval(customPlayIntervalRef.current);
   };
 
   const scaleNotes = getScaleNotes();
@@ -746,10 +797,19 @@ export default function App() {
                     ? 'bg-rose-500/20 text-rose-400 border-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
                     : 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                 }`}
-                title={isPlaying ? 'Detener Progresión' : 'Reproducir Progresión'}
+                title={
+                  isPlaying
+                    ? 'Detener Progresión'
+                    : customProgression.length > 0
+                      ? `Reproducir Progresión Grabada (${customProgression.length} acordes)`
+                      : 'Reproducir Progresión (Aleatoria o Seleccionada de Famosas)'
+                }
               >
                 <i className={`fa-solid ${isPlaying ? 'fa-square' : 'fa-play'} text-[10px]`}></i>
                 <span>{isPlaying ? 'Detener' : 'Play'}</span>
+                {customProgression.length > 0 && !isPlaying && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Progresión grabada lista"></span>
+                )}
               </button>
             </div>
 
@@ -940,15 +1000,7 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => isPlayingCustom ? stopPlayCustom() : startPlayCustom()}
-                title="Escuchar Secuencia"
-                className={`w-10 h-10 rounded-lg flex items-center justify-center shadow transition text-base text-white ${isPlayingCustom ? 'bg-rose-600 hover:bg-rose-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}
-              >
-                <i className={`fa-solid ${isPlayingCustom ? 'fa-square' : 'fa-play'}`}></i>
-              </button>
-
-              <button
-                onClick={() => { setCustomProgression([]); setActiveCustomSlotIndex(0); if(isPlayingCustom) stopPlayCustom(); }}
+                onClick={() => { setCustomProgression([]); setActiveCustomSlotIndex(0); if(isPlaying) stopProgression(); }}
                 title="Limpiar Secuencia"
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 w-10 h-10 rounded-lg transition border border-slate-600 flex items-center justify-center text-base"
               >
@@ -1038,82 +1090,27 @@ export default function App() {
             </div>
 
             <div className="space-y-3 mt-1">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-amber-400/90 tracking-wider mb-1.5 block flex items-center gap-1">
-                  <i className="fa-solid fa-guitar text-[9px]"></i> Pop, Rock & Blues Clásico
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { arr: [0, 3, 4, 0], label: 'I - IV - V - I (Clásica Reposo-Movimiento)' },
-                    { arr: [0, 4, 5, 3], label: 'I - V - VI - IV (Pop Moderno / 4 Chords)' },
-                    { arr: [0, 5, 3, 4], label: 'I - VI - IV - V (Pop Estándar / Balada)' },
-                    { arr: [0, 4, 3, 4], label: 'I - V - IV - V (Rock / Pop Clásico)' },
-                    { arr: [0, 3, 0, 4], label: 'I - IV - I - V (Blues / Tradicional)' },
-                    { arr: [0, 4, 1, 3], label: 'I - V - II - IV (Indie / Alternative Folk)' }
-                  ].map((p, i) => (
-                    <button key={i} onClick={() => setCurrentProgression(p.arr)} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-full border border-slate-600 hover:border-amber-400/50 transition">
-                      {p.label}
-                    </button>
-                  ))}
+              {FAMOUS_PROGRESSIONS_CATEGORIES.map((cat, catIdx) => (
+                <div key={catIdx}>
+                  <span className={`text-[10px] uppercase font-bold ${cat.color} tracking-wider mb-1.5 block flex items-center gap-1`}>
+                    <i className={`fa-solid ${cat.icon} text-[9px]`}></i> {cat.category}
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {cat.items.map((p, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setCurrentProgression(p.arr);
+                          setSelectedFamousProgression(p);
+                        }}
+                        className={`text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-full border border-slate-600 ${cat.borderHover} transition`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-bold text-indigo-400/90 tracking-wider mb-1.5 block flex items-center gap-1">
-                  <i className="fa-solid fa-saxhorn text-[9px]"></i> Jazz, Neo-Soul & Lo-Fi
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { arr: [1, 4, 0, 0], label: 'II - V - I (Cadencia Fundamental de Jazz)' },
-                    { arr: [1, 4, 0, 5], label: 'II - V - I - VI (Círculo Armónico de Jazz)' },
-                    { arr: [0, 2, 5, 3], label: 'I - III - VI - IV (Lo-Fi Nostálgico / Neo-Soul)' },
-                    { arr: [0, 3, 1, 4], label: 'I - IV - II - V (Gospel / Soft Soul)' },
-                    { arr: [0, 5, 1, 4], label: 'I - VI - II - V (Turnaround Clásico Doo-Wop)' }
-                  ].map((p, i) => (
-                    <button key={i} onClick={() => setCurrentProgression(p.arr)} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-full border border-slate-600 hover:border-indigo-400/50 transition">
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-bold text-rose-400/90 tracking-wider mb-1.5 block flex items-center gap-1">
-                  <i className="fa-solid fa-film text-[9px]"></i> BSO, Cine, Épica & Videojuegos
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { arr: [0, 5, 2, 4], label: 'I - VI - III - V (Emotiva / Dramática)' },
-                    { arr: [0, 3, 5, 4], label: 'I - IV - VI - V (Épica Cinematográfica)' },
-                    { arr: [3, 4, 0, 5], label: 'IV - V - I - VI (Heroica RPG / Triunfal)' },
-                    { arr: [3, 0, 4, 5], label: 'IV - I - V - VI (Gran Aventura BSO)' },
-                    { arr: [0, 6, 5, 4], label: 'I - VII - VI - V (Descenso Tensión Épica)' }
-                  ].map((p, i) => (
-                    <button key={i} onClick={() => setCurrentProgression(p.arr)} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-full border border-slate-600 hover:border-rose-400/50 transition">
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-400/90 tracking-wider mb-1.5 block flex items-center gap-1">
-                  <i className="fa-solid fa-compact-disc text-[9px]"></i> Anime, J-Pop & Exploración Modal
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { arr: [3, 4, 2, 5], label: 'IV - V - III - VI (Royal Road / 王道進行 - Anime & J-Pop)' },
-                    { arr: [5, 3, 0, 4], label: 'VI - IV - I - V (Axis Menor / Melancolía Pop)' },
-                    { arr: [5, 4, 3, 4], label: 'VI - V - IV - V (Cadencia Andaluza / Aire Flamenco-Rock)' },
-                    { arr: [0, 2, 3, 4], label: 'I - III - IV - V (Ascensión Escalofriante)' },
-                    { arr: [0, 3, 2, 1], label: 'I - IV - III - II (Cascada Flotante Modal)' }
-                  ].map((p, i) => (
-                    <button key={i} onClick={() => setCurrentProgression(p.arr)} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-full border border-slate-600 hover:border-emerald-400/50 transition">
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
