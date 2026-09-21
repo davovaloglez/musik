@@ -87,7 +87,15 @@ const FAMOUS_PROGRESSIONS_CATEGORIES = [
   }
 ];
 
-const ALL_FAMOUS_PROGRESSIONS = FAMOUS_PROGRESSIONS_CATEGORIES.flatMap(c => c.items);
+const ALL_FAMOUS_PROGRESSIONS = FAMOUS_PROGRESSIONS_CATEGORIES.flatMap(c =>
+  c.items.map(it => ({
+    ...it,
+    category: c.category,
+    icon: c.icon,
+    color: c.color,
+    borderHover: c.borderHover
+  }))
+);
 
 
 // --- FUNCIONES DE DIBUJO DE GEOMETRÍA SAGRADA (CANVAS D'VORTEX) ---
@@ -275,6 +283,9 @@ export default function App() {
   const [activeCustomSlotIndex, setActiveCustomSlotIndex] = useState(0);
   const [isRecordingMode, setIsRecordingMode] = useState(false);
   const [selectedFamousProgression, setSelectedFamousProgression] = useState(null);
+  const [selectedGenreIndex, setSelectedGenreIndex] = useState(0);
+  const [activeFamousProgression, setActiveFamousProgression] = useState(null);
+  const [isLibraryExpanded, setIsLibraryExpanded] = useState(false);
 
   // Estados del Visualizador de Geometría Sagrada (D'VORTEX)
   const [isMatrixActive, setIsMatrixActive] = useState(true);
@@ -499,9 +510,6 @@ export default function App() {
 
   const toggleEmblemD = () => {
     setIsEmblemDActive(prev => !prev);
-    if (containerRef.current) {
-      containerRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   const toggleMatrixMode = () => {
@@ -588,6 +596,7 @@ export default function App() {
       // Si existe una progresión guardada, reproducir la progresión grabada
       progressionToPlay = [...customProgression];
       isPlayingCustomMode = true;
+      setActiveFamousProgression(null);
     } else {
       // Si no existe una progresión guardada, reproducir una pre-selección aleatoria de las famosas
       let chosen = selectedFamousProgression;
@@ -595,9 +604,20 @@ export default function App() {
         const randomIndex = Math.floor(Math.random() * ALL_FAMOUS_PROGRESSIONS.length);
         chosen = ALL_FAMOUS_PROGRESSIONS[randomIndex];
       }
+
+      const genreIdx = FAMOUS_PROGRESSIONS_CATEGORIES.findIndex(cat =>
+        cat.items.some(it => it.label === chosen.label)
+      );
+      if (genreIdx !== -1) {
+        setSelectedGenreIndex(genreIdx);
+      }
+
+      setActiveFamousProgression(chosen);
+      setSelectedFamousProgression(chosen);
+      setIsLibraryExpanded(false); // Ocultar todas las demás para mantener la línea visual limpia
+
       progressionToPlay = [...chosen.arr];
       setCurrentProgression([...chosen.arr]);
-      setSelectedFamousProgression(null);
     }
 
     const totalStepDurationSec = (60 / currentBpm) * beatsPerChordValue;
@@ -626,6 +646,7 @@ export default function App() {
   const stopProgression = () => {
     setIsPlaying(false);
     if (playIntervalRef.current) clearInterval(playIntervalRef.current);
+    setIsLibraryExpanded(false);
   };
 
   const scaleNotes = getScaleNotes();
@@ -645,7 +666,7 @@ export default function App() {
             </h1>
             <p className="text-xs text-slate-400">Basado en las Funciones Armónicas: Tónica (Descanso), Subdominante (Movimiento) y Dominante (Urgencia)</p>
           </div>
-          
+
           {/* Panel de Control de Tonalidad, Alteración e Inclinación (Mayor/Menor) */}
           <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-900 p-2.5 rounded-xl border border-slate-700">
             {/* Selector de Nota Base (Sólo Notas Naturales) */}
@@ -695,19 +716,6 @@ export default function App() {
                 Menor
               </button>
             </div>
-
-            {/* Botón de acceso directo al Visualizador del Emblema */}
-            <button
-              id="btnEmblemaD"
-              onClick={toggleEmblemD}
-              className={`ml-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold transition flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
-                isEmblemDActive
-                  ? 'text-cyan-400 border-cyan-500/30 shadow-[0_0_10px_rgba(0,240,255,0.1)]'
-                  : 'text-slate-400 border-slate-700 opacity-60'
-              }`}
-            >
-              <i className="fa-solid fa-hurricane"></i> Emblema D
-            </button>
           </div>
         </div>
       </header>
@@ -757,11 +765,10 @@ export default function App() {
                   <button
                     key={item.val}
                     onClick={() => setBeatsPerChordValue(item.val)}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-0.5 ${
-                      beatsPerChordValue === item.val
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-0.5 ${beatsPerChordValue === item.val
                         ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
                         : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
-                    }`}
+                      }`}
                     title={`${item.label} (${item.val} tiempos)`}
                   >
                     <span className="text-xs font-serif leading-none">{item.symbol}</span>
@@ -777,11 +784,10 @@ export default function App() {
                   <button
                     key={hits}
                     onClick={() => setHitsPerChordValue(hits)}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${
-                      hitsPerChordValue === hits
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${hitsPerChordValue === hits
                         ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow'
                         : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400/50'
-                    }`}
+                      }`}
                     title={`${hits} golpes por acorde`}
                   >
                     {hits}x
@@ -792,11 +798,10 @@ export default function App() {
               {/* Botón rápido Play/Stop en el Visualizador */}
               <button
                 onClick={() => isPlaying ? stopProgression() : startProgression()}
-                className={`vortex-panel flex items-center gap-1.5 font-bold cursor-pointer transition ${
-                  isPlaying
+                className={`vortex-panel flex items-center gap-1.5 font-bold cursor-pointer transition ${isPlaying
                     ? 'bg-rose-500/20 text-rose-400 border-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
                     : 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                }`}
+                  }`}
                 title={
                   isPlaying
                     ? 'Detener Progresión'
@@ -870,23 +875,26 @@ export default function App() {
 
               <div className="flex gap-2">
                 <button
-                  className="vortex-panel hover:bg-slate-800 transition-colors cursor-pointer border-emerald-neon"
-                  onClick={() => {
-                    if (containerRef.current) containerRef.current.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  Vortex
-                </button>
-                <button
                   id="btnMatrixMode"
                   onClick={toggleMatrixMode}
-                  className={`vortex-panel hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer ${
-                    isMatrixActive
+                  className={`vortex-panel hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer ${isMatrixActive
                       ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
                       : 'text-slate-400 border-slate-700 opacity-60'
-                  }`}
+                    }`}
+                  title={isMatrixActive ? 'Desactivar Matrix' : 'Activar Matrix'}
                 >
                   <i className="fa-solid fa-circle-nodes"></i> Matrix
+                </button>
+                <button
+                  id="btnEmblemaD"
+                  onClick={toggleEmblemD}
+                  className={`vortex-panel hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer ${isEmblemDActive
+                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                      : 'text-slate-400 border-slate-700 opacity-60'
+                    }`}
+                  title={isEmblemDActive ? 'Ocultar Emblema D' : 'Mostrar Emblema'}
+                >
+                  <i className="fa-solid fa-hurricane text-[10px]"></i> D
                 </button>
                 <button
                   className="vortex-panel hover:bg-slate-800 transition-colors cursor-pointer"
@@ -944,9 +952,8 @@ export default function App() {
                 <div
                   key={idx}
                   onClick={() => onCardClicked(idx)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col justify-between items-center text-center relative overflow-hidden ${
-                    idx === selectedDegreeIndex ? 'active-card bg-slate-800 border-amber-400' : 'bg-slate-800/60 hover:bg-slate-800 border-slate-700'
-                  }`}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col justify-between items-center text-center relative overflow-hidden ${idx === selectedDegreeIndex ? 'active-card bg-slate-800 border-amber-400' : 'bg-slate-800/60 hover:bg-slate-800 border-slate-700'
+                    }`}
                 >
                   <div className={`w-full flex justify-between items-start text-xs font-bold ${deg.colorText} mb-1`}>
                     <div className="flex flex-col items-center">
@@ -1000,7 +1007,7 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => { setCustomProgression([]); setActiveCustomSlotIndex(0); if(isPlaying) stopProgression(); }}
+                onClick={() => { setCustomProgression([]); setActiveCustomSlotIndex(0); if (isPlaying) stopProgression(); }}
                 title="Limpiar Secuencia"
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 w-10 h-10 rounded-lg transition border border-slate-600 flex items-center justify-center text-base"
               >
@@ -1034,9 +1041,8 @@ export default function App() {
                     <div
                       key={slotIdx}
                       onClick={() => setActiveCustomSlotIndex(slotIdx)}
-                      className={`p-2.5 rounded-xl border flex flex-col items-center justify-between cursor-pointer transition-all min-w-[85px] relative group ${
-                        isSelected ? 'bg-amber-500/20 border-amber-400 ring-2 ring-amber-400/50' : 'bg-slate-800/90 border-slate-700 hover:border-slate-500'
-                      }`}
+                      className={`p-2.5 rounded-xl border flex flex-col items-center justify-between cursor-pointer transition-all min-w-[85px] relative group ${isSelected ? 'bg-amber-500/20 border-amber-400 ring-2 ring-amber-400/50' : 'bg-slate-800/90 border-slate-700 hover:border-slate-500'
+                        }`}
                     >
                       <div className="flex justify-between w-full items-center text-[10px] text-slate-400">
                         <span>#{slotIdx + 1}</span>
@@ -1084,34 +1090,119 @@ export default function App() {
           <div className="flex flex-col gap-3 mb-6 bg-slate-900/60 p-4 rounded-xl border border-slate-700/80">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-300 font-bold flex items-center gap-1.5">
-                <i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Biblioteca Ampliada de Progresiones y Cadencias:
+                <i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Biblioteca de Progresiones y Cadencias:
               </span>
-              <span className="text-[11px] text-slate-400 italic">Haz clic en cualquiera para cargarla al instante</span>
+              <span className="text-[11px] text-slate-400 italic">
+                {isPlaying && activeFamousProgression && !isLibraryExpanded
+                  ? 'Mostrando únicamente la progresión activa'
+                  : 'Filtra por género y haz clic para cargarla'}
+              </span>
             </div>
 
-            <div className="space-y-3 mt-1">
-              {FAMOUS_PROGRESSIONS_CATEGORIES.map((cat, catIdx) => (
-                <div key={catIdx}>
-                  <span className={`text-[10px] uppercase font-bold ${cat.color} tracking-wider mb-1.5 block flex items-center gap-1`}>
-                    <i className={`fa-solid ${cat.icon} text-[9px]`}></i> {cat.category}
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.items.map((p, i) => (
+            {isPlaying && activeFamousProgression && !isLibraryExpanded ? (
+              /* Vista compacta y limpia durante la reproducción: SOLO la progresión seleccionada */
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-950/80 p-3 rounded-xl border border-emerald-500/40 shadow-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                    <i className="fa-solid fa-volume-high animate-pulse text-xs"></i>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] uppercase font-bold ${activeFamousProgression.color || 'text-amber-400'} tracking-wider flex items-center gap-1`}>
+                        <i className={`fa-solid ${activeFamousProgression.icon || 'fa-compact-disc'} text-[9px]`}></i>
+                        {activeFamousProgression.category || 'Progresión Famosa'}
+                      </span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded-full border border-emerald-500/30 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        En reproducción
+                      </span>
+                    </div>
+                    <div className="text-sm font-bold text-amber-300 mt-0.5">
+                      {activeFamousProgression.label}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsLibraryExpanded(true)}
+                  className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 transition flex items-center gap-1.5 self-end sm:self-auto cursor-pointer"
+                  title="Mostrar el catálogo completo por género"
+                >
+                  <i className="fa-solid fa-layer-group text-[10px] text-amber-400"></i>
+                  <span>Explorar otros géneros</span>
+                </button>
+              </div>
+            ) : (
+              /* Vista con Selector por Género y Lista Filtrada */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  {/* Selector por Género */}
+                  <div className="flex flex-wrap gap-1.5 bg-slate-950/70 p-1 rounded-xl border border-slate-800">
+                    {FAMOUS_PROGRESSIONS_CATEGORIES.map((cat, catIdx) => {
+                      const isGenreActive = selectedGenreIndex === catIdx;
+                      return (
+                        <button
+                          key={catIdx}
+                          onClick={() => setSelectedGenreIndex(catIdx)}
+                          className={`text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isGenreActive
+                              ? 'bg-slate-800 text-amber-300 border border-amber-400/40 shadow ring-1 ring-amber-400/20'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+                            }`}
+                        >
+                          <i className={`fa-solid ${cat.icon} ${isGenreActive ? cat.color : 'text-slate-500'} text-[10px]`}></i>
+                          <span>{cat.category}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {isPlaying && isLibraryExpanded && (
+                    <button
+                      onClick={() => setIsLibraryExpanded(false)}
+                      className="text-xs bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <i className="fa-solid fa-compress text-[10px]"></i>
+                      <span>Ocultar otras</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Progresiones del género seleccionado */}
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  {FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex]?.items.map((p, i) => {
+                    const isSelected = selectedFamousProgression?.label === p.label ||
+                      (currentProgression.length === p.arr.length && currentProgression.every((val, idx) => val === p.arr[idx]));
+
+                    return (
                       <button
                         key={i}
                         onClick={() => {
+                          const fullItem = {
+                            ...p,
+                            category: FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex].category,
+                            icon: FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex].icon,
+                            color: FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex].color
+                          };
                           setCurrentProgression(p.arr);
-                          setSelectedFamousProgression(p);
+                          setSelectedFamousProgression(fullItem);
+                          if (isPlaying) {
+                            setActiveFamousProgression(fullItem);
+                            setIsLibraryExpanded(false);
+                          }
                         }}
-                        className={`text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-full border border-slate-600 ${cat.borderHover} transition`}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer ${isSelected
+                            ? 'bg-amber-500/20 text-amber-200 border-amber-400 ring-2 ring-amber-400/50 font-bold shadow'
+                            : `bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600 ${FAMOUS_PROGRESSIONS_CATEGORIES[selectedGenreIndex].borderHover}`
+                          }`}
                       >
+                        {isSelected && <i className="fa-solid fa-check text-[9px] text-amber-400"></i>}
                         {p.label}
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-4 gap-3">
@@ -1125,7 +1216,7 @@ export default function App() {
                   <span className="text-[10px] font-mono text-slate-500 mb-1">Compás {stepIdx + 1}</span>
                   <div className="text-lg font-bold text-amber-300 my-1">{chordName}</div>
                   <span className={`text-xs font-semibold ${deg.colorText}`}>{deg.roman} ({deg.mode})</span>
-                  
+
                   <select
                     value={degIdx}
                     onChange={(e) => {
