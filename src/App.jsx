@@ -689,7 +689,7 @@ export default function App() {
 
             {/* Toggle Sostenido (#) */}
             <div className="flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
-              <span className="text-xs font-semibold text-slate-300">Sostenido (#):</span>
+              <span className="text-xs font-semibold text-slate-300">S (#):</span>
               <button
                 onClick={() => setIsSharpActive(!isSharpActive)}
                 className={`w-10 h-6 rounded-full p-0.5 transition-colors duration-200 focus:outline-none flex items-center ${isSharpActive ? 'bg-amber-500' : 'bg-slate-700'}`}
@@ -706,13 +706,13 @@ export default function App() {
                 onClick={() => setCurrentScaleType('major')}
                 className={`px-3 py-1 rounded text-xs font-bold transition-all ${currentScaleType === 'major' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                Mayor
+                M
               </button>
               <button
                 onClick={() => setCurrentScaleType('minor')}
                 className={`px-3 py-1 rounded text-xs font-bold transition-all ${currentScaleType === 'minor' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                Menor
+                m
               </button>
             </div>
           </div>
@@ -756,10 +756,10 @@ export default function App() {
               <div className="vortex-panel flex items-center gap-1.5" title="Figura Rítmica (Tiempos por acorde)">
                 <i className="fa-solid fa-music text-amber-400 text-xs mr-0.5"></i>
                 {[
-                  { val: 4, symbol: '𝅝', label: '4t' },
-                  { val: 2, symbol: '𝅗𝅥', label: '2t' },
-                  { val: 1, symbol: '♩', label: '1t' },
-                  { val: 0.5, symbol: '♪', label: '½t' }
+                  { val: 4, symbol: '𝅝', label: '4' },
+                  { val: 2, symbol: '𝅗𝅥', label: '2' },
+                  { val: 1, symbol: '♩', label: '1' },
+                  { val: 0.5, symbol: '♪', label: '½' }
                 ].map(item => (
                   <button
                     key={item.val}
@@ -803,14 +803,14 @@ export default function App() {
                   }`}
                 title={
                   isPlaying
-                    ? 'Detener Progresión'
+                    ? 'Detener'
                     : customProgression.length > 0
-                      ? `Reproducir Progresión Grabada (${customProgression.length} acordes)`
-                      : 'Reproducir Progresión (Aleatoria o Seleccionada de Famosas)'
+                      ? `Progresión Grabada (${customProgression.length} acordes)`
+                      : 'Aleatoria de Biblioteca)'
                 }
               >
                 <i className={`fa-solid ${isPlaying ? 'fa-square' : 'fa-play'} text-[10px]`}></i>
-                <span>{isPlaying ? 'Detener' : 'Play'}</span>
+                <span>{isPlaying ? 'S' : 'P'}</span>
                 {customProgression.length > 0 && !isPlaying && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Progresión grabada lista"></span>
                 )}
@@ -882,7 +882,7 @@ export default function App() {
                     }`}
                   title={isMatrixActive ? 'Desactivar Matrix' : 'Activar Matrix'}
                 >
-                  <i className="fa-solid fa-circle-nodes"></i> Matrix
+                  <i className="fa-solid fa-circle-nodes"></i> M
                 </button>
                 <button
                   id="btnEmblemaD"
@@ -891,7 +891,7 @@ export default function App() {
                     ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
                     : 'text-slate-400 border-slate-700 opacity-60'
                     }`}
-                  title={isEmblemDActive ? 'Ocultar Emblema D' : 'Mostrar Emblema'}
+                  title={isEmblemDActive ? 'Ocultar Emblema' : 'Mostrar Emblema'}
                 >
                   <i className="fa-solid fa-hurricane text-[10px]"></i> D
                 </button>
@@ -912,14 +912,14 @@ export default function App() {
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-              <i className="fa-solid fa-sliders text-amber-400"></i> Grados Armónicos y Modos
+              <i className="fa-solid fa-sliders text-amber-400"></i> Grados, Modos y Urgencia
               <span className="text-xs font-bold text-amber-300 ml-2 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full">
-                Tonalidad de {rootNameEs} ({rootName}) {scaleName}
+                Tono de {rootNameEs} ({rootName}) {scaleName}
               </span>
             </h2>
             {isRecordingMode && (
               <div className="text-xs font-bold text-rose-400 bg-rose-500/20 px-3 py-1 rounded-full border border-rose-500/40 animate-pulse flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-rose-500"></span> Modo Grabación: Haz clic en cualquier tarjeta para añadirla
+                <span className="w-2 h-2 rounded-full bg-rose-500"></span> Recording: clic card
               </div>
             )}
           </div>
@@ -976,9 +976,8 @@ export default function App() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div>
               <h2 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                <i className="fa-solid fa-microphone-lines text-rose-400"></i> Creador y Grabador de Progresión Personalizada
+                <i className="fa-solid fa-microphone-lines text-rose-400"></i> Progresión Personalizada
               </h2>
-              <p className="text-xs text-slate-400">Haz clic en los recuadros de arriba para ir armando o grabando tu propia secuencia de acordes paso a paso.</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -1012,7 +1011,7 @@ export default function App() {
             <div className="flex flex-wrap gap-2.5 items-center">
               {customProgression.length === 0 ? (
                 <div className="text-xs text-slate-500 italic py-2 px-1">
-                  Aún no has grabado acordes. Pulsa el botón de grabación y haz clic en las tarjetas de arriba para construir tu progresión.
+                  No has grabado acordes.
                 </div>
               ) : (
                 customProgression.map((degIdx, slotIdx) => {
@@ -1052,7 +1051,7 @@ export default function App() {
           <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
             <span className="font-semibold text-slate-300">Compases grabados: {customProgression.length}</span>
             <div className="flex items-center gap-2">
-              <span>Añadir / Quitar ranura manual:</span>
+              <span>Añadir/Quitar:</span>
               <button onClick={() => setCustomProgression(prev => [...prev, 0])} className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-0.5 rounded font-bold border border-slate-600">+</button>
               <button onClick={() => setCustomProgression(prev => prev.slice(0, -1))} className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-0.5 rounded font-bold border border-slate-600">-</button>
             </div>
@@ -1066,7 +1065,7 @@ export default function App() {
                 <i className="fa-solid fa-play text-emerald-400"></i> Generador de Secuencia y Ritmo
               </h2>
               <p className="text-xs text-slate-400">
-                Experimenta la alternancia entre descanso, movimiento y urgencia en el tiempo. (Tempo: <span className="text-amber-400 font-bold">{currentBpm} BPM</span> | Figura: <span className="text-amber-400 font-bold">{beatsPerChordValue}t</span> | Golpes: <span className="text-amber-400 font-bold">{hitsPerChordValue}x</span>)
+                Info (Tempo: <span className="text-amber-400 font-bold">{currentBpm} BPM</span> | Figura: <span className="text-amber-400 font-bold">{beatsPerChordValue}t</span> | Golpes: <span className="text-amber-400 font-bold">{hitsPerChordValue}x</span>)
               </p>
             </div>
           </div>
@@ -1074,12 +1073,12 @@ export default function App() {
           <div className="flex flex-col gap-3 mb-6 bg-slate-900/60 p-4 rounded-xl border border-slate-700/80">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-300 font-bold flex items-center gap-1.5">
-                <i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Biblioteca de Progresiones y Cadencias:
+                <i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Progresiones y Cadencias:
               </span>
               <span className="text-[11px] text-slate-400 italic">
                 {isPlaying && activeFamousProgression && !isLibraryExpanded
                   ? 'Mostrando únicamente la progresión activa'
-                  : 'Filtra por género y haz clic para cargarla'}
+                  : '-'}
               </span>
             </div>
 
@@ -1225,7 +1224,7 @@ export default function App() {
       </main>
 
       <footer className="bg-slate-950 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
-        Teoría de Funciones Armónicas y Modos Griegos — Interfaz Educativa Interactiva
+        Funciones Armónicas y Modos Griegos — Interfaz Interactiva Cognitivizadora
       </footer>
     </div>
   );
