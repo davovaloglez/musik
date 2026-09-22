@@ -60,15 +60,15 @@ const FAMOUS_PROGRESSIONS_CATEGORIES = [
     ]
   },
   {
-    category: 'BSO, Cine, Épica & Videojuegos',
+    category: 'Cine, Épica & Videojuegos',
     icon: 'fa-film',
     color: 'text-rose-400/90',
     borderHover: 'hover:border-rose-400/50',
     items: [
       { arr: [0, 5, 2, 4], label: 'I - VI - III - V (Emotiva / Dramática)' },
-      { arr: [0, 3, 5, 4], label: 'I - IV - VI - V (Épica Cinematográfica)' },
-      { arr: [3, 4, 0, 5], label: 'IV - V - I - VI (Heroica RPG / Triunfal)' },
-      { arr: [3, 0, 4, 5], label: 'IV - I - V - VI (Gran Aventura BSO)' },
+      { arr: [0, 3, 5, 4], label: 'I - IV - VI - V (Épica Cine)' },
+      { arr: [3, 4, 0, 5], label: 'IV - V - I - VI (Heroica / Triunfal)' },
+      { arr: [3, 0, 4, 5], label: 'IV - I - V - VI (Gran Aventura)' },
       { arr: [0, 6, 5, 4], label: 'I - VII - VI - V (Descenso Tensión Épica)' }
     ]
   },
@@ -662,7 +662,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-amber-400 flex items-center gap-2">
-              <i className="fa-solid fa-music"></i> Mapas de Tensión y Modos Griegos
+              <i className="fa-solid fa-music"></i> Modos Griegos y su tensión
             </h1>
           </div>
 
@@ -983,7 +983,7 @@ export default function App() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsRecordingMode(!isRecordingMode)}
-                title="Grabar en Vivo"
+                title="Record"
                 className={`w-10 h-10 rounded-lg flex items-center justify-center shadow transition text-base text-white ${isRecordingMode ? 'bg-rose-600 recording-pulse' : 'bg-rose-600 hover:bg-rose-500'}`}
               >
                 <i className="fa-solid fa-circle"></i>
@@ -991,7 +991,7 @@ export default function App() {
 
               <button
                 onClick={() => { setCustomProgression([]); setActiveCustomSlotIndex(0); if (isPlaying) stopProgression(); }}
-                title="Limpiar Secuencia"
+                title="Clear"
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 w-10 h-10 rounded-lg transition border border-slate-600 flex items-center justify-center text-base"
               >
                 <i className="fa-solid fa-trash"></i>
@@ -999,7 +999,7 @@ export default function App() {
 
               <button
                 onClick={() => customProgression.length > 0 && setCurrentProgression([...customProgression])}
-                title="Exportar al Generador"
+                title="Export"
                 className="bg-amber-500 hover:bg-amber-400 text-slate-950 w-10 h-10 rounded-lg transition shadow flex items-center justify-center text-base font-bold"
               >
                 <i className="fa-solid fa-arrow-down-long"></i>
@@ -1062,7 +1062,7 @@ export default function App() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                <i className="fa-solid fa-play text-emerald-400"></i> Generador de Secuencia y Ritmo
+                <i className="fa-solid fa-play text-emerald-400"></i> Generador de Secuencia
               </h2>
               <p className="text-xs text-slate-400">
                 Info (Tempo: <span className="text-amber-400 font-bold">{currentBpm} BPM</span> | Figura: <span className="text-amber-400 font-bold">{beatsPerChordValue}t</span> | Golpes: <span className="text-amber-400 font-bold">{hitsPerChordValue}x</span>)
