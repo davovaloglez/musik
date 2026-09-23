@@ -727,13 +727,6 @@ export default function App() {
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-2.5">
             {/* Lado Izquierdo: Badge D'VORTEX + Controles Rítmicos (Tempo, Figura, Golpes, Play) */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="vortex-panel flex items-center gap-3 rounded-full">
-                <span className="flex items-center gap-1.5 font-bold tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> D`VORTEX
-                </span>
-                <span className="text-slate-500">|</span>
-                <span className="text-emerald-neon font-bold">Φ = 1.618</span>
-              </div>
 
               {/* Control de Tempo (BPM) */}
               <div className="vortex-panel flex items-center gap-2" title="Tempo (BPM)">
